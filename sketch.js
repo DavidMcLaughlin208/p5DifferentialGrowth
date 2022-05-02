@@ -1,5 +1,5 @@
 
-const initialDst = 55;
+const initialDst = 10;
 let nodeCollection;
 
 function setup() {
@@ -8,7 +8,7 @@ function setup() {
   stroke(0);
   strokeWeight(4);
   nodeCollection = new NodeCollection();
-  for (let i = 100; i < 300; i += initialDst) {
+  for (let i = 0; i < 400; i += initialDst) {
     nodeCollection.appendNode(new DFNode(i, 200));
   }
 }
@@ -20,6 +20,7 @@ function draw() {
 }
 
 class NodeCollection {
+  connected = false;
   constructor() {
     this.nodes = [];
   }
@@ -31,23 +32,23 @@ class NodeCollection {
   operate() {
     for (let i = 0; i < this.nodes.length; i++) {
       let node = this.nodes[i];
-      node.operate(this.nodes[this.getPrev(i)], this.nodes[this.getNext(i)]);
+      node.operate(this.getPrev(i), this.getNext(i));
     }
   }
 
   getNext(index) {
     if (index == this.nodes.length - 1) {
-      return 0;
+      return this.connected ? this.nodes[0] : null;
     } else {
-      return index + 1;
+      return this.nodes[index + 1];
     }
   }
 
   getPrev(index) {
     if (index == 0) {
-      return this.nodes.length - 1;
+      return this.connected ? this.nodes[this.nodes.length - 1] : null;
     } else {
-      return index - 1;
+      return this.nodes[index - 1];
     }
   }
 
@@ -78,19 +79,17 @@ class DFNode {
   operate(prev, next) {
     // attraction force
     let attractionForce = createVector(0, 0);
-    if (this.distance(prev) > this.neighborMaxDst) {
+    if (prev && this.distance(prev) > this.neighborMaxDst) {
       attractionForce.add(p5.Vector.sub(prev.pos, this.pos));
     }
-    if (this.distance(next) > this.neighborMaxDst) {
+    if (next && this.distance(next) > this.neighborMaxDst) {
       attractionForce.add(p5.Vector.sub(next.pos, this.pos));
     }
-    // attractionForce.mult(0.00001);
-
     // repulsion force
 
     // alignment force
 
-    this.pos = p5.Vector.lerp(this.pos, p5.Vector.add(this.pos, attractionForce), 0.01);
+    this.pos = p5.Vector.lerp(this.pos, p5.Vector.add(this.pos, attractionForce), 0.1);
   }
 
   draw() {
